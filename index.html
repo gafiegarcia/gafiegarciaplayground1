@@ -1,348 +1,152 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monthly Financial Dashboard | Ritual24</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            border-radius: 20px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.15);
-            overflow: hidden;
-        }
-        
-        .header {
-            background: linear-gradient(135deg, #2c3e50, #3498db);
-            color: white;
-            padding: 40px;
-            text-align: center;
-        }
-        
-        .header h1 {
-            font-size: 2.8em;
-            font-weight: 300;
-            margin-bottom: 10px;
-        }
-        
-        .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
-        }
-        
-        .subtitle {
-            background: #34495e;
-            color: white;
-            padding: 15px;
-            text-align: center;
-            font-size: 1.1em;
-        }
-        
-        .charts-grid {
-            padding: 40px;
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 30px;
-        }
-        
-        .chart-card {
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 30px;
-            text-align: center;
-            transition: all 0.3s ease;
-            border: 2px solid transparent;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .chart-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-            border-color: #3498db;
-        }
-        
-        .chart-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 4px;
-            background: linear-gradient(90deg, #3498db, #9b59b6);
-        }
-        
-        .chart-title {
-            font-size: 1.4em;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 10px;
-        }
-        
-        .chart-period {
-            color: #7f8c8d;
-            margin-bottom: 20px;
-            font-size: 1em;
-        }
-        
-        .chart-stats {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            margin: 20px 0;
-        }
-        
-        .stat-item {
-            background: white;
-            padding: 15px;
-            border-radius: 10px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-        }
-        
-        .stat-value {
-            font-size: 1.2em;
-            font-weight: bold;
-            color: #2c3e50;
-        }
-        
-        .stat-label {
-            color: #95a5a6;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        
-        .chart-link {
-            display: inline-block;
-            background: linear-gradient(135deg, #3498db, #2980b9);
-            color: white;
-            padding: 12px 25px;
-            border-radius: 25px;
-            text-decoration: none;
-            font-weight: 600;
-            transition: all 0.3s ease;
-            margin-top: 15px;
-        }
-        
-        .chart-link:hover {
-            background: linear-gradient(135deg, #2980b9, #1f5582);
-            transform: scale(1.05);
-        }
-        
-        .status-badge {
-            position: absolute;
-            top: 15px;
-            right: 15px;
-            padding: 5px 12px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            font-weight: bold;
-        }
-        
-        .status-critical {
-            background: #fee;
-            color: #e74c3c;
-            border: 1px solid #fadbd8;
-        }
-        
-        .status-warning {
-            background: #fef9e7;
-            color: #f39c12;
-            border: 1px solid #fcf3cf;
-        }
-        
-        .status-healthy {
-            background: #eafaf1;
-            color: #27ae60;
-            border: 1px solid #d5f4e6;
-        }
-        
-        .coming-soon {
-            opacity: 0.6;
-            pointer-events: none;
-        }
-        
-        .coming-soon .chart-link {
-            background: #95a5a6;
-            cursor: not-allowed;
-        }
-        
-        .footer {
-            background: #2c3e50;
-            color: white;
-            padding: 30px;
-            text-align: center;
-        }
-        
-        .footer p {
-            margin-bottom: 10px;
-        }
-        
-        .last-updated {
-            color: #bdc3c7;
-            font-size: 0.9em;
-        }
-        
-        @media (max-width: 768px) {
-            .charts-grid {
-                grid-template-columns: 1fr;
-                padding: 20px;
-            }
-            
-            .header h1 {
-                font-size: 2.2em;
-            }
-            
-            .chart-stats {
-                grid-template-columns: 1fr;
-            }
-        }
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ritual24 — Monthly Financial Dashboard</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <style>
+    :root{
+      --bg:#0b1020; --panel:#0f1a36; --card:#121a33; --muted:#93a4c8; --fg:#eaf0ff;
+      --sky:#0ea5e9; --amber:#f59e0b; --violet:#8b5cf6; --slate:#64748b; --rose:#ef4444;
+      --ring:rgba(14,165,233,.35);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
+      background:linear-gradient(180deg,#0b1020 0%,#0c1230 100%); color:var(--fg);
+    }
+    .wrap{max-width:1100px; margin:24px auto; padding:0 16px}
+    h1{font-weight:650; letter-spacing:.2px; margin:0 0 6px}
+    .muted{color:var(--muted); font-size:13px}
+    .panel{
+      margin-top:12px;
+      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.07); border-radius:16px; padding:16px;
+      box-shadow:0 12px 30px rgba(0,0,0,.28);
+    }
+    .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px}
+    .card{
+      background:var(--card); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:14px;
+      transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease; position:relative;
+    }
+    .card:hover{transform:translateY(-2px); border-color:var(--ring); box-shadow:0 10px 24px rgba(0,0,0,.25)}
+    .title{font-weight:600; margin-bottom:2px}
+    .period{font-size:12px; color:var(--muted); margin-bottom:10px}
+    .badge{position:absolute; top:10px; right:10px; font-size:11px; padding:3px 8px; border-radius:999px; font-weight:600}
+    .b-danger{background:rgba(239,68,68,.12); color:#fecaca; border:1px solid rgba(239,68,68,.35)}
+    .b-ok{background:rgba(14,165,233,.12); color:#bae6fd; border:1px solid rgba(14,165,233,.35)}
+    .b-soon{background:rgba(148,163,184,.12); color:#cbd5e1; border:1px solid rgba(148,163,184,.35)}
+    .stats{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:10px 0 8px}
+    .stat{background:#0f172a; border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:8px}
+    .sv{font-weight:650}
+    .sl{font-size:11px; color:var(--muted)}
+    .btn{
+      display:inline-block; margin-top:6px; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.18);
+      background:rgba(255,255,255,.04); color:var(--fg); text-decoration:none; font-weight:600; font-size:13px;
+    }
+    .btn:hover{outline:2px solid var(--ring)}
+    .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; font-size:12px; color:var(--muted)}
+    .dot{width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px}
+    .footer{margin-top:14px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap}
+    @media(max-width:720px){ .stats{grid-template-columns:1fr} }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>📊 Financial Dashboard</h1>
-            <p>Monthly Spending Analysis & Insights</p>
-        </div>
-        
-        <div class="subtitle">
-            Ritual24 - Your Journey to Financial Freedom 🎯
-        </div>
-        
-        <div class="charts-grid">
-            <!-- Aug-Sep 2025 Chart -->
-            <div class="chart-card">
-                <div class="status-badge status-critical">CRITICAL</div>
-                <div class="chart-title">August - September 2025</div>
-                <div class="chart-period">Aug 24 → Sep 24, 2025</div>
-                
-                <div class="chart-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">Rp 8.2M</div>
-                        <div class="stat-label">Income</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">-33.4%</div>
-                        <div class="stat-label">Deficit</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">53.3%</div>
-                        <div class="stat-label">Food Spending</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">0%</div>
-                        <div class="stat-label">Savings Rate</div>
-                    </div>
-                </div>
-                
-                <a href="charts/aug-sep-2025.html" class="chart-link">View Detailed Report</a>
-            </div>
-            
-            <!-- Sep-Oct 2025 Chart (Coming Soon) -->
-            <div class="chart-card coming-soon">
-                <div class="status-badge status-warning">UPCOMING</div>
-                <div class="chart-title">September - October 2025</div>
-                <div class="chart-period">Sep 24 → Oct 24, 2025</div>
-                
-                <div class="chart-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">—</div>
-                        <div class="stat-label">Income</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">—</div>
-                        <div class="stat-label">Balance</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">—</div>
-                        <div class="stat-label">Food Spending</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">Target: 15%+</div>
-                        <div class="stat-label">Savings Rate</div>
-                    </div>
-                </div>
-                
-                <a href="#" class="chart-link">Coming Soon</a>
-            </div>
-            
-            <!-- Oct-Nov 2025 Chart (Coming Soon) -->
-            <div class="chart-card coming-soon">
-                <div class="status-badge status-healthy">PLANNED</div>
-                <div class="chart-title">October - November 2025</div>
-                <div class="chart-period">Oct 24 → Nov 24, 2025</div>
-                
-                <div class="chart-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">—</div>
-                        <div class="stat-label">Income</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">Goal: +5%</div>
-                        <div class="stat-label">Balance</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">Target: <25%</div>
-                        <div class="stat-label">Food Spending</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">Target: 20%+</div>
-                        <div class="stat-label">Savings Rate</div>
-                    </div>
-                </div>
-                
-                <a href="#" class="chart-link">Coming Soon</a>
-            </div>
-            
-            <!-- Nov-Dec 2025 Chart (Coming Soon) -->
-            <div class="chart-card coming-soon">
-                <div class="status-badge status-healthy">PLANNED</div>
-                <div class="chart-title">November - December 2025</div>
-                <div class="chart-period">Nov 24 → Dec 24, 2025</div>
-                
-                <div class="chart-stats">
-                    <div class="stat-item">
-                        <div class="stat-value">—</div>
-                        <div class="stat-label">Income</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">Goal: +10%</div>
-                        <div class="stat-label">Balance</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">Target: <25%</div>
-                        <div class="stat-label">Food Spending</div>
-                    </div>
-                    <div class="stat-item">
-                        <div class="stat-value">Target: 20%+</div>
-                        <div class="stat-label">Savings Rate</div>
-                    </div>
-                </div>
-                
-                <a href="#" class="chart-link">Coming Soon</a>
-            </div>
-        </div>
-        
-        <div class="footer">
-            <p><strong>Financial Strategy:</strong> Build systems, discipline, and flexibility for stress-free money management</p>
-            <p><strong>Goals:</strong> Steady savings growth • Smart income increases • Financial freedom</p>
-            <p class="last-updated">Last Updated: September 27, 2025</p>
-        </div>
+  <div class="wrap">
+    <h1>Ritual24 — Financial Dashboard</h1>
+    <div class="muted">Home links to each month’s interactive bar chart. Same style as the new ECharts page.</div>
+
+    <div class="panel">
+      <div id="cards" class="grid"></div>
+      <div class="legend">
+        <span><span class="dot" style="background:var(--sky)"></span>Essential</span>
+        <span><span class="dot" style="background:var(--amber)"></span>Strategic</span>
+        <span><span class="dot" style="background:var(--violet)"></span>Lifestyle</span>
+        <span><span class="dot" style="background:var(--slate)"></span>Buffer</span>
+        <span><span class="dot" style="background:var(--rose)"></span>Overspend (indicator)</span>
+      </div>
+      <div class="footer">
+        <div>Tip: add more months by editing the <code>CHARTS</code> array below.</div>
+        <div id="updated">Last updated —</div>
+      </div>
     </div>
+  </div>
+
+  <script>
+    // ====== Data: add or edit your months here ======
+    // url is relative to repo root (e.g., charts/aug-sep-2025.html)
+    const CHARTS = [
+      {
+        title: "August → September 2025",
+        period: "Aug 24 → Sept 24, 2025",
+        url: "charts/aug-sep-2025.html",
+        income: 8200000,
+        overspend: 2742421,
+        foodPct: 53.3,
+        savingsPct: 0
+      },
+      // Optional alternate view
+      {
+        title: "Aug → Sept 2025 (Alt)",
+        period: "Same period — alternate chart",
+        url: "charts/cgpt-aug-sep-2025.html",
+        status: "ok" // ok | soon | danger
+      },
+      // Future placeholders you can quickly rename
+      { title: "September → October 2025", period: "Sep 24 → Oct 24, 2025", url: "#", status: "soon" },
+      { title: "October → November 2025", period: "Oct 24 → Nov 24, 2025", url: "#", status: "soon" }
+    ];
+
+    function fmtRp(n){ return "Rp " + Math.round(n).toLocaleString("id-ID"); }
+    function pct(n,d=1){ return (Math.round(n * (10**d)) / (10**d)).toFixed(d) + "%"; }
+
+    function makeCard(item){
+      const overs = typeof item.overspend === "number" ? item.overspend : 0;
+      const status = item.status || (overs > 0 ? "danger" : "ok");
+      const card = document.createElement("div");
+      card.className = "card";
+
+      const badge = document.createElement("div");
+      badge.className = "badge " + (status === "danger" ? "b-danger" : status === "soon" ? "b-soon" : "b-ok");
+      badge.textContent = status === "danger" ? "CRITICAL" : status === "soon" ? "UPCOMING" : "READY";
+      card.appendChild(badge);
+
+      const t = document.createElement("div");
+      t.className = "title";
+      t.textContent = item.title;
+      card.appendChild(t);
+
+      const p = document.createElement("div");
+      p.className = "period";
+      p.textContent = item.period || "";
+      card.appendChild(p);
+
+      if (typeof item.income === "number"){
+        const stats = document.createElement("div"); stats.className = "stats";
+        stats.innerHTML = `
+          <div class="stat"><div class="sv">${fmtRp(item.income)}</div><div class="sl">Income</div></div>
+          <div class="stat"><div class="sv">${overs>0?("-" + pct((overs/item.income)*100)):"0%"}</div><div class="sl">Balance</div></div>
+          <div class="stat"><div class="sv">${typeof item.foodPct==="number"?pct(item.foodPct):"—"}</div><div class="sl">Food</div></div>
+          <div class="stat"><div class="sv">${typeof item.savingsPct==="number"?pct(item.savingsPct):"—"}</div><div class="sl">Savings</div></div>
+        `;
+        card.appendChild(stats);
+      }
+
+      const a = document.createElement("a");
+      a.href = item.url || "#"; a.target = "_self"; a.rel = "noopener";
+      a.className = "btn"; a.textContent = item.url && item.url !== "#" ? "Open Chart" : "Coming Soon";
+      if (!item.url || item.url === "#"){ a.style.opacity = .6; a.style.pointerEvents = "none"; }
+      card.appendChild(a);
+
+      return card;
+    }
+
+    const mount = document.getElementById("cards");
+    CHARTS.forEach(c => mount.appendChild(makeCard(c)));
+
+    document.getElementById("updated").textContent = "Last updated — " + new Date().toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
+  </script>
 </body>
 </html>
