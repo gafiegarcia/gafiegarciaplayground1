@@ -1,194 +1,253 @@
-import React, { useMemo, useState } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Switch } from "@/components/ui/switch";
-import { Label } from "@/components/ui/label";
-import { motion } from "framer-motion";
-import {
-  BarChart,
-  Bar,
-  Cell,
-  Tooltip,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  ResponsiveContainer,
-} from "recharts";
-import { ArrowUpDown, Percent, CircleDollarSign } from "lucide-react";
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Spending by Category — Aug 24 → Sept 24, 2025</title>
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --card: #121a33;
+      --muted: #93a4c8;
+      --fg: #eaf0ff;
+      --sky: #0ea5e9;   /* Essential */
+      --amber: #f59e0b; /* Strategic */
+      --violet: #8b5cf6;/* Lifestyle */
+      --slate: #64748b; /* Buffer */
+      --rose: #ef4444;  /* Overspend */
+    }
+    html, body { height: 100%; }
+    body {
+      margin: 0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;
+      background: linear-gradient(180deg, #0b1020 0%, #0c1230 100%);
+      color: var(--fg);
+    }
+    .wrap { max-width: 1100px; margin: 24px auto; padding: 0 16px; }
+    h1 { font-weight: 650; letter-spacing: 0.2px; margin: 0 0 10px; }
+    .muted { color: var(--muted); font-size: 13px; }
+    .panel {
+      background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));
+      border: 1px solid rgba(255,255,255,0.07);
+      border-radius: 16px; padding: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.28);
+    }
+    .controls { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin: 14px 0; }
+    .btn, .toggle { cursor: pointer; border: 1px solid rgba(255,255,255,0.18); background: rgba(255,255,255,0.04);
+      color: var(--fg); border-radius: 10px; padding: 8px 10px; font-size: 13px; }
+    .btn.active { outline: 2px solid var(--sky); }
+    .grid { display: grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap: 10px; margin-top: 10px; }
+    .card { background: var(--card); border: 1px solid rgba(255,255,255,0.12); border-radius: 14px; padding: 12px; }
+    .card .cap { color: var(--muted); font-size: 12px; }
+    .card .val { font-size: 22px; font-weight: 650; margin-top: 4px; }
+    #chart { height: 480px; }
+    .legend { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; margin-top: 10px; }
+    .chip { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+    .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+    .note { color: var(--muted); font-size: 12px; margin-top: 8px; }
+    @media (max-width: 720px) { .grid { grid-template-columns: 1fr; } .legend { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Spending by Category — <span style="color: var(--sky)">Aug 24 → Sept 24, 2025</span></h1>
+    <div class="muted">Interactive, deployable on GitHub Pages (single HTML file, no build step).</div>
 
-// --- Data (Aug 24 → Sept 24, 2025) ---
-const INCOME = 8_200_000;
-
-const RAW = [
-  { category: "Food", amount: 4_370_800, type: "Essential" },
-  { category: "Laundry", amount: 250_000, type: "Essential" },
-  { category: "Fuel", amount: 150_000, type: "Essential" },
-  { category: "Toiletries", amount: 200_000, type: "Essential" },
-  { category: "Subscriptions", amount: 879_910, type: "Essential" },
-  { category: "KOS (rent)", amount: 1_200_000, type: "Essential" },
-  { category: "PLN Token", amount: 103_000, type: "Essential" },
-  { category: "Telkomsel", amount: 151_000, type: "Essential" },
-  { category: "Haircut", amount: 60_000, type: "Essential" },
-  { category: "Telkomsel mamam", amount: 102_000, type: "Essential" },
-  { category: "First Media", amount: 361_860, type: "Essential" },
-  { category: "Gas PGN", amount: 153_000, type: "Essential" },
-  { category: "Strategic (GoPay Later payoff)", amount: 1_763_222, type: "Strategic" },
-  { category: "Lifestyle (BiliBili + Vape)", amount: 398_090, type: "Lifestyle" },
-  { category: "Buffer", amount: 799_539, type: "Buffer" },
-  // Overspend is an INDICATOR, not an expense. We keep it as a row for visualization only.
-  { category: "Overspend", amount: 2_742_421, type: "Overspend" },
-];
-
-// Helpers
-const fmtRp = (n: number) => new Intl.NumberFormat("id-ID").format(Math.round(n));
-const pct = (n: number) => (n / INCOME) * 100;
-
-const COLOR_BY_TYPE: Record<string, string> = {
-  Essential: "#0ea5e9", // sky-500
-  Strategic: "#f59e0b", // amber-500
-  Lifestyle: "#8b5cf6", // violet-500
-  Buffer: "#64748b", // slate-500
-  Overspend: "#ef4444", // red-500
-};
-
-const typeOrder: Record<string, number> = { Essential: 0, Strategic: 1, Lifestyle: 2, Buffer: 3, Overspend: 4 };
-
-export default function InteractiveSpendingBarAugSept2025() {
-  const [usePercent, setUsePercent] = useState(false);
-  const [desc, setDesc] = useState(true);
-  const [labelToggle, setLabelToggle] = useState(true);
-
-  // ✅ Compute totals correctly: expenses EXCLUDE overspend; overspend is derived
-  const totals = useMemo(() => {
-    const totalExpenses = RAW.filter((r) => r.type !== "Overspend").reduce((s, r) => s + r.amount, 0);
-    const overspend = Math.max(totalExpenses - INCOME, 0);
-    return { totalExpenses, overspend };
-  }, []);
-
-  // "Tests" (light sanity checks) — run in dev only
-  if (typeof window !== "undefined") {
-    console.assert(
-      totals.totalExpenses === RAW.filter((r) => r.type !== "Overspend").reduce((s, r) => s + r.amount, 0),
-      "[Test] Total expenses calc mismatch"
-    );
-    console.assert(
-      totals.overspend === Math.max(totals.totalExpenses - INCOME, 0),
-      "[Test] Overspend calc mismatch"
-    );
-  }
-
-  // Build chart rows; inject computed overspend amount and per-row styling/labels
-  const data = useMemo(() => {
-    const rows = RAW.map((d) => {
-      const amount = d.type === "Overspend" ? totals.overspend : d.amount;
-      const value = usePercent ? pct(amount) : amount;
-      const label = usePercent ? `${pct(amount).toFixed(1)}%` : `Rp${fmtRp(amount)}`;
-      return { ...d, amount, value, label, fill: COLOR_BY_TYPE[d.type] || "#94a3b8" };
-    });
-    // sort by value (desc/asc), with deterministic tie-breakers: type then name
-    return rows.sort((a, b) => {
-      const dir = desc ? -1 : 1;
-      if (a.value === b.value) {
-        if (typeOrder[a.type] === typeOrder[b.type]) return a.category.localeCompare(b.category);
-        return (typeOrder[a.type] - typeOrder[b.type]) * dir;
-      }
-      return a.value > b.value ? -1 * dir : 1 * dir;
-    });
-  }, [usePercent, desc, totals]);
-
-  return (
-    <div className="w-full p-4 md:p-6">
-      <div className="mx-auto max-w-6xl grid grid-cols-1 gap-4">
-        <motion.h1
-          initial={{ opacity: 0, y: -6 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4 }}
-          className="text-2xl md:text-3xl font-semibold"
-        >
-          Spending by Category — <span className="text-sky-600">Aug 24 → Sept 24, 2025</span>
-        </motion.h1>
-
-        <Card className="shadow-sm">
-          <CardContent className="p-4 md:p-6">
-            <div className="flex flex-wrap items-center gap-3 mb-4">
-              <Button variant="secondary" size="sm" onClick={() => setUsePercent(false)} className={!usePercent ? "ring-2 ring-sky-500" : ""}>
-                <CircleDollarSign className="w-4 h-4 mr-2" /> Rupiah
-              </Button>
-              <Button variant="secondary" size="sm" onClick={() => setUsePercent(true)} className={usePercent ? "ring-2 ring-sky-500" : ""}>
-                <Percent className="w-4 h-4 mr-2" /> % of Income
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => setDesc((d) => !d)}>
-                <ArrowUpDown className="w-4 h-4 mr-2" /> {desc ? "Sort: High → Low" : "Sort: Low → High"}
-              </Button>
-              <div className="flex items-center gap-2 ml-auto">
-                <Switch id="labels" checked={labelToggle} onCheckedChange={setLabelToggle} />
-                <Label htmlFor="labels">Show labels</Label>
-              </div>
-            </div>
-
-            <div className="h-[420px]">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 60 }}>
-                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
-                  <XAxis dataKey="category" angle={-35} textAnchor="end" interval={0} height={80} tick={{ fontSize: 12 }} />
-                  <YAxis tickFormatter={(v) => (usePercent ? `${(v as number).toFixed(0)}%` : `Rp${fmtRp(v as number)}`)} tick={{ fontSize: 12 }} />
-                  <Tooltip
-                    formatter={(value: number, _name: string, props: any) => {
-                      const row = props?.payload;
-                      const rp = `Rp${fmtRp(row.amount)}`;
-                      const pc = `${pct(row.amount).toFixed(2)}%`;
-                      return [usePercent ? pc : rp, row.category];
-                    }}
-                  />
-                  <Bar dataKey="value" radius={[8, 8, 0, 0]} animationBegin={200} animationDuration={800} animationEasing="ease-out" isAnimationActive>
-                    {data.map((entry) => (
-                      <Cell key={entry.category} fill={entry.fill} />
-                    ))}
-                  </Bar>
-                </BarChart>
-              </ResponsiveContainer>
-            </div>
-
-            {labelToggle && (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
-                {data.map((d) => (
-                  <div key={d.category} className="flex items-center justify-between rounded-xl border p-2">
-                    <span className="text-sm mr-2 truncate" title={`${d.category} — ${d.type}`}>{d.category}</span>
-                    <span className="text-sm font-medium" style={{ color: d.fill }}>
-                      {d.label}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <Card className="bg-sky-50">
-            <CardContent className="p-4">
-              <div className="text-sm text-sky-700">Income</div>
-              <div className="text-2xl font-semibold">Rp{fmtRp(INCOME)}</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-amber-50">
-            <CardContent className="p-4">
-              <div className="text-sm text-amber-700">Total Expenses</div>
-              <div className="text-2xl font-semibold">Rp{fmtRp(totals.totalExpenses)}</div>
-            </CardContent>
-          </Card>
-          <Card className="bg-rose-50">
-            <CardContent className="p-4">
-              <div className="text-sm text-rose-700">Overspend</div>
-              <div className="text-2xl font-semibold">Rp{fmtRp(totals.overspend)} <span className="text-base font-normal">({pct(totals.overspend).toFixed(1)}%)</span></div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <p className="text-xs text-muted-foreground mt-2">
-          Note: "Total Expenses" excludes Overspend; Overspend = max(Total Expenses − Income, 0) and is shown as an indicator only. Toggle % view to see which categories are eating the largest bite of income.
-        </p>
+    <div class="panel">
+      <div class="controls">
+        <button id="rupiahBtn" class="btn active">Rupiah</button>
+        <button id="percentBtn" class="btn">% of income</button>
+        <button id="sortBtn" class="btn">Sort: High → Low</button>
+        <label class="toggle"><input type="checkbox" id="labelsCk" checked> Show labels</label>
+        <label class="toggle"><input type="checkbox" id="overspendCk" checked> Show overspend bar</label>
       </div>
+      <div id="chart"></div>
+
+      <div class="grid">
+        <div class="card">
+          <div class="cap">Income</div>
+          <div id="incomeVal" class="val">—</div>
+        </div>
+        <div class="card">
+          <div class="cap">Total Expenses (excl. overspend)</div>
+          <div id="totalVal" class="val">—</div>
+        </div>
+        <div class="card">
+          <div class="cap">Overspend</div>
+          <div id="overspendVal" class="val">—</div>
+        </div>
+      </div>
+
+      <div class="legend">
+        <div class="chip"><span class="dot" style="background: var(--sky)"></span> Essential</div>
+        <div class="chip"><span class="dot" style="background: var(--amber)"></span> Strategic</div>
+        <div class="chip"><span class="dot" style="background: var(--violet)"></span> Planned Lifestyle</div>
+        <div class="chip"><span class="dot" style="background: var(--slate)"></span> Buffer</div>
+        <div class="chip"><span class="dot" style="background: var(--rose)"></span> Overspend (indicator)</div>
+      </div>
+      <div class="note">Note: Overspend is an indicator only. Overspend = max(Total Expenses − Income, 0), and is excluded from the Total Expenses number.</div>
     </div>
-  );
-}
+  </div>
+
+  <script>
+    // ====== Data (Aug 24 → Sept 24, 2025) ======
+    const INCOME = 8_200_000;
+    const ROWS = [
+      { category: 'Food', amount: 4_370_800, type: 'Essential' },
+      { category: 'Laundry', amount: 250_000, type: 'Essential' },
+      { category: 'Fuel', amount: 150_000, type: 'Essential' },
+      { category: 'Toiletries', amount: 200_000, type: 'Essential' },
+      { category: 'Subscriptions', amount: 879_910, type: 'Essential' },
+      { category: 'KOS (rent)', amount: 1_200_000, type: 'Essential' },
+      { category: 'PLN Token', amount: 103_000, type: 'Essential' },
+      { category: 'Telkomsel', amount: 151_000, type: 'Essential' },
+      { category: 'Haircut', amount: 60_000, type: 'Essential' },
+      { category: 'Telkomsel mamam', amount: 102_000, type: 'Essential' },
+      { category: 'First Media', amount: 361_860, type: 'Essential' },
+      { category: 'Gas PGN', amount: 153_000, type: 'Essential' },
+      { category: 'Strategic (GoPay Later payoff)', amount: 1_763_222, type: 'Strategic' },
+      { category: 'Lifestyle (BiliBili + Vape)', amount: 398_090, type: 'Lifestyle' },
+      { category: 'Buffer', amount: 799_539, type: 'Buffer' }
+    ];
+
+    const COLORS = { Essential: getVar('--sky'), Strategic: getVar('--amber'), Lifestyle: getVar('--violet'), Buffer: getVar('--slate'), Overspend: getVar('--rose') };
+    const TYPE_ORDER = { Essential: 0, Strategic: 1, Lifestyle: 2, Buffer: 3, Overspend: 4 };
+
+    // ====== Utilities ======
+    function getVar(name){ return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+    function fmtRp(n){ return 'Rp' + Math.round(n).toLocaleString('id-ID'); }
+    function pct(n){ return (n / INCOME) * 100; }
+    function totalExpenses(){ return ROWS.reduce((s,r)=> s + r.amount, 0); }
+    function computeOverspend(){ return Math.max(totalExpenses() - INCOME, 0); }
+
+    // Simple tests (console)
+    (function tests(){
+      const t = totalExpenses();
+      console.assert(t === 10_942_421, '[Test] Total expenses mismatch', t);
+      const o = computeOverspend();
+      console.assert(o === 2_742_421, '[Test] Overspend mismatch', o);
+      const p = +( (o/INCOME)*100 ).toFixed(2);
+      console.assert(p === 33.44, '[Test] Overspend % mismatch', p);
+    })();
+
+    // ====== Chart state ======
+    let usePercent = false;
+    let sortDesc = true;
+    let showLabels = true;
+    let showOverspend = true;
+
+    // ====== Build series data ======
+    function buildData(){
+      const rows = [...ROWS];
+      const overs = computeOverspend();
+      if (showOverspend && overs > 0) rows.push({ category: 'Overspend', amount: overs, type: 'Overspend' });
+
+      // map to data points with computed view values
+      const mapped = rows.map(r => ({
+        category: r.category,
+        type: r.type,
+        amount: r.amount,
+        value: usePercent ? pct(r.amount) : r.amount,
+        color: COLORS[r.type] || '#94a3b8'
+      }));
+
+      // sort by value, then type, then name
+      mapped.sort((a,b) => {
+        const dir = sortDesc ? -1 : 1;
+        if (a.value === b.value){
+          if (TYPE_ORDER[a.type] === TYPE_ORDER[b.type]) return a.category.localeCompare(b.category) * dir;
+          return (TYPE_ORDER[a.type] - TYPE_ORDER[b.type]) * dir;
+        }
+        return (a.value > b.value ? -1 : 1) * dir;
+      });
+      return mapped;
+    }
+
+    // ====== ECharts setup ======
+    const chart = echarts.init(document.getElementById('chart'));
+    function render(){
+      const data = buildData();
+      const names = data.map(d => d.category);
+      const vals = data.map(d => d.value);
+      const colors = data.map(d => d.color);
+
+      chart.setOption({
+        backgroundColor: 'transparent',
+        animationDuration: 800,
+        grid: { left: 8, right: 12, top: 20, bottom: 80, containLabel: true },
+        xAxis: {
+          type: 'category', data: names, axisLabel: { rotate: 35, color: '#cbd5e1' },
+          axisLine: { lineStyle: { color: 'rgba(255,255,255,0.2)' } }
+        },
+        yAxis: {
+          type: 'value',
+          axisLabel: {
+            color: '#cbd5e1',
+            formatter: (v) => usePercent ? `${v|0}%` : fmtRp(v)
+          },
+          splitLine: { lineStyle: { color: 'rgba(255,255,255,0.12)' } }
+        },
+        tooltip: {
+          trigger: 'axis', axisPointer: { type: 'shadow' },
+          backgroundColor: '#0f172a', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1,
+          textStyle: { color: '#e2e8f0' },
+          formatter: (p) => {
+            const items = p[0].axisValueLabel ? p : [{ axisValue: p.name, dataIndex: p.dataIndex, value: p.value }];
+            const i = items[0].dataIndex;
+            const row = buildData()[i]; // aligned by render order
+            const rp = fmtRp(row.amount);
+            const pc = pct(row.amount).toFixed(2) + '%';
+            return `<div><strong>${row.category}</strong><br>${rp} · ${pc}</div>`;
+          }
+        },
+        series: [{
+          type: 'bar', data: vals,
+          itemStyle: {
+            color: (params) => colors[params.dataIndex],
+            borderRadius: [8,8,0,0]
+          },
+          label: {
+            show: showLabels,
+            position: 'top',
+            color: '#e2e8f0',
+            formatter: (d) => usePercent ? `${(d.value).toFixed(1)}%` : fmtRp(d.value)
+          }
+        }]
+      });
+    }
+
+    render();
+    window.addEventListener('resize', () => chart.resize());
+
+    // ====== Summary cards ======
+    function refreshCards(){
+      const total = totalExpenses();
+      const overs = computeOverspend();
+      document.getElementById('incomeVal').textContent = fmtRp(INCOME);
+      document.getElementById('totalVal').textContent = fmtRp(total);
+      document.getElementById('overspendVal').textContent = `${fmtRp(overs)} (${pct(overs).toFixed(1)}%)`;
+    }
+    refreshCards();
+
+    // ====== Controls ======
+    document.getElementById('rupiahBtn').addEventListener('click', () => {
+      usePercent = false; setActive('rupiahBtn'); render();
+    });
+    document.getElementById('percentBtn').addEventListener('click', () => {
+      usePercent = true; setActive('percentBtn'); render();
+    });
+    document.getElementById('sortBtn').addEventListener('click', (e) => {
+      sortDesc = !sortDesc; e.currentTarget.textContent = sortDesc ? 'Sort: High → Low' : 'Sort: Low → High'; render();
+    });
+    document.getElementById('labelsCk').addEventListener('change', (e) => { showLabels = e.target.checked; render(); });
+    document.getElementById('overspendCk').addEventListener('change', (e) => { showOverspend = e.target.checked; render(); });
+
+    function setActive(id){
+      const a = document.getElementById('rupiahBtn');
+      const b = document.getElementById('percentBtn');
+      a.classList.toggle('active', id === 'rupiahBtn');
+      b.classList.toggle('active', id === 'percentBtn');
+    }
+  </script>
+</body>
+</html>
