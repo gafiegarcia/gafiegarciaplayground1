@@ -9,66 +9,172 @@
     :root{
       --bg:#0b1020; --panel:#0f1a36; --card:#121a33; --muted:#93a4c8; --fg:#eaf0ff;
       --sky:#0ea5e9; --amber:#f59e0b; --violet:#8b5cf6; --slate:#64748b; --rose:#ef4444;
-      --ring:rgba(14,165,233,.35);
+      --emerald:#10b981; --orange:#f97316;
+      --ring:rgba(14,165,233,.35); --ring-danger:rgba(239,68,68,.4);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Inter,Arial,sans-serif;
       background:linear-gradient(180deg,#0b1020 0%,#0c1230 100%); color:var(--fg);
+      line-height:1.5;
     }
-    .wrap{max-width:1100px; margin:24px auto; padding:0 16px}
-    h1{font-weight:650; letter-spacing:.2px; margin:0 0 6px}
-    .muted{color:var(--muted); font-size:13px}
+    
+    .wrap{max-width:1200px; margin:24px auto; padding:0 16px}
+    
+    /* Enhanced Header */
+    .header{text-align:center; margin-bottom:32px}
+    h1{
+      font-weight:700; letter-spacing:.2px; margin:0 0 8px; font-size:2.5rem;
+      background:linear-gradient(135deg,var(--sky),var(--violet)); -webkit-background-clip:text;
+      background-clip:text; -webkit-text-fill-color:transparent; color:transparent;
+    }
+    .subtitle{color:var(--muted); font-size:16px; margin-bottom:12px}
+    .tagline{
+      font-size:14px; color:var(--muted); padding:12px 24px; 
+      background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.08);
+      border-radius:24px; display:inline-block; margin-top:8px;
+    }
+    
+    /* Enhanced Panel */
     .panel{
-      margin-top:12px;
-      background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.07); border-radius:16px; padding:16px;
-      box-shadow:0 12px 30px rgba(0,0,0,.28);
+      background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.02));
+      border:1px solid rgba(255,255,255,.08); border-radius:20px; padding:24px;
+      box-shadow:0 20px 40px rgba(0,0,0,.3);
     }
-    .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:12px}
+    
+    .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px}
+    
+    /* Enhanced Cards */
     .card{
-      background:var(--card); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:14px;
-      transition:transform .15s ease, box-shadow .15s ease, border-color .15s ease; position:relative;
+      background:linear-gradient(135deg,var(--card),rgba(18,26,51,.8)); 
+      border:1px solid rgba(255,255,255,.12); border-radius:16px; padding:20px;
+      transition:all .2s cubic-bezier(0.4,0,0.2,1); position:relative; overflow:hidden;
     }
-    .card:hover{transform:translateY(-2px); border-color:var(--ring); box-shadow:0 10px 24px rgba(0,0,0,.25)}
-    .title{font-weight:600; margin-bottom:2px}
-    .period{font-size:12px; color:var(--muted); margin-bottom:10px}
-    .badge{position:absolute; top:10px; right:10px; font-size:11px; padding:3px 8px; border-radius:999px; font-weight:600}
-    .b-danger{background:rgba(239,68,68,.12); color:#fecaca; border:1px solid rgba(239,68,68,.35)}
-    .b-ok{background:rgba(14,165,233,.12); color:#bae6fd; border:1px solid rgba(14,165,233,.35)}
-    .b-soon{background:rgba(148,163,184,.12); color:#cbd5e1; border:1px solid rgba(148,163,184,.35)}
-    .stats{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:10px 0 8px}
-    .stat{background:#0f172a; border:1px solid rgba(255,255,255,.06); border-radius:10px; padding:8px}
-    .sv{font-weight:650}
-    .sl{font-size:11px; color:var(--muted)}
+    .card:hover{
+      transform:translateY(-4px); border-color:var(--ring); 
+      box-shadow:0 20px 40px rgba(0,0,0,.4);
+    }
+    
+    /* Card accent line */
+    .card::before{
+      content:''; position:absolute; top:0; left:0; right:0; height:3px;
+      background:linear-gradient(90deg,var(--sky),var(--violet));
+    }
+    .card.danger::before{background:linear-gradient(90deg,var(--rose),var(--orange))}
+    .card.soon::before{background:linear-gradient(90deg,var(--slate),var(--muted))}
+    
+    .title{font-weight:650; margin-bottom:4px; font-size:18px}
+    .period{font-size:13px; color:var(--muted); margin-bottom:16px}
+    
+    /* Enhanced Badges */
+    .badge{
+      position:absolute; top:12px; right:12px; font-size:10px; 
+      padding:4px 10px; border-radius:999px; font-weight:700; 
+      text-transform:uppercase; letter-spacing:.5px;
+    }
+    .b-danger{background:rgba(239,68,68,.15); color:#fca5a5; border:1px solid rgba(239,68,68,.4)}
+    .b-ok{background:rgba(16,185,129,.15); color:#6ee7b7; border:1px solid rgba(16,185,129,.4)}
+    .b-soon{background:rgba(148,163,184,.15); color:#cbd5e1; border:1px solid rgba(148,163,184,.4)}
+    
+    /* Enhanced Stats Grid */
+    .stats{display:grid; grid-template-columns:repeat(2,1fr); gap:10px; margin:16px 0}
+    .stat{
+      background:rgba(0,0,0,.3); border:1px solid rgba(255,255,255,.08); 
+      border-radius:12px; padding:12px; text-align:center;
+      transition:background .2s ease;
+    }
+    .stat:hover{background:rgba(0,0,0,.4)}
+    .sv{font-weight:700; font-size:15px; margin-bottom:2px}
+    .sl{font-size:11px; color:var(--muted); text-transform:uppercase; letter-spacing:.3px}
+    
+    /* Stat value colors */
+    .stat-income .sv{color:var(--emerald)}
+    .stat-balance .sv{color:var(--rose)}
+    .stat-balance.positive .sv{color:var(--emerald)}
+    .stat-food .sv{color:var(--amber)}
+    .stat-food.danger .sv{color:var(--rose)}
+    .stat-savings .sv{color:var(--sky)}
+    .stat-savings.zero .sv{color:var(--slate)}
+    
+    /* Enhanced Button */
     .btn{
-      display:inline-block; margin-top:6px; padding:8px 12px; border-radius:10px; border:1px solid rgba(255,255,255,.18);
-      background:rgba(255,255,255,.04); color:var(--fg); text-decoration:none; font-weight:600; font-size:13px;
+      display:inline-block; margin-top:12px; padding:10px 16px; border-radius:12px; 
+      border:1px solid rgba(255,255,255,.2); background:rgba(255,255,255,.06); 
+      color:var(--fg); text-decoration:none; font-weight:600; font-size:13px;
+      transition:all .2s ease; text-align:center; width:100%;
     }
-    .btn:hover{outline:2px solid var(--ring)}
-    .legend{display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; font-size:12px; color:var(--muted)}
-    .dot{width:10px; height:10px; border-radius:50%; display:inline-block; margin-right:6px}
-    .footer{margin-top:14px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:8px; flex-wrap:wrap}
-    @media(max-width:720px){ .stats{grid-template-columns:1fr} }
+    .btn:hover{
+      background:rgba(14,165,233,.1); border-color:var(--ring); 
+      box-shadow:0 0 0 3px rgba(14,165,233,.1);
+    }
+    .btn:disabled, .btn.disabled{
+      opacity:.5; pointer-events:none; background:rgba(100,116,139,.1);
+      border-color:rgba(100,116,139,.2);
+    }
+    
+    /* Enhanced Legend */
+    .legend{
+      display:flex; flex-wrap:wrap; gap:12px; margin:20px 0 16px; 
+      font-size:12px; color:var(--muted); justify-content:center;
+    }
+    .legend-item{
+      display:flex; align-items:center; gap:6px; 
+      padding:4px 8px; background:rgba(255,255,255,.02); 
+      border-radius:16px; border:1px solid rgba(255,255,255,.05);
+    }
+    .dot{width:8px; height:8px; border-radius:50%; display:inline-block}
+    
+    /* Enhanced Footer */
+    .footer{
+      margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,.08);
+      font-size:12px; color:var(--muted); display:flex; 
+      justify-content:space-between; align-items:center; gap:12px; flex-wrap:wrap;
+    }
+    .footer code{
+      background:rgba(255,255,255,.08); padding:2px 6px; 
+      border-radius:4px; font-family:ui-monospace,monospace;
+    }
+    
+    /* Progress Ring for Critical Cards */
+    .progress-ring{
+      position:absolute; top:-2px; left:-2px; right:-2px; bottom:-2px;
+      border:2px solid transparent; border-radius:16px; pointer-events:none;
+    }
+    .card.danger .progress-ring{
+      border-color:rgba(239,68,68,.3);
+      animation:pulse-danger 2s ease-in-out infinite alternate;
+    }
+    
+    @keyframes pulse-danger{
+      from{border-color:rgba(239,68,68,.2)}
+      to{border-color:rgba(239,68,68,.4)}
+    }
+    
+    /* Responsive */
+    @media(max-width:768px){ 
+      .stats{grid-template-columns:1fr}
+      .grid{grid-template-columns:1fr}
+      h1{font-size:2rem}
+      .wrap{padding:0 12px}
+    }
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>Ritual24 — Financial Dashboard</h1>
-    <div class="muted">Home links to each month’s interactive bar chart. Same style as the new ECharts page.</div>
+    <div class="header">
+      <h1>Ritual24</h1>
+      <div class="subtitle">Monthly Financial Dashboard & Analysis</div>
+      <div class="tagline">📊 Building systems for stress-free money management & financial freedom</div>
+    </div>
 
     <div class="panel">
       <div id="cards" class="grid"></div>
-      <div class="legend">
-        <span><span class="dot" style="background:var(--sky)"></span>Essential</span>
-        <span><span class="dot" style="background:var(--amber)"></span>Strategic</span>
-        <span><span class="dot" style="background:var(--violet)"></span>Lifestyle</span>
-        <span><span class="dot" style="background:var(--slate)"></span>Buffer</span>
-        <span><span class="dot" style="background:var(--rose)"></span>Overspend (indicator)</span>
-      </div>
+      
+
+      
       <div class="footer">
-        <div>Tip: add more months by editing the <code>CHARTS</code> array below.</div>
+        <div>💡 <strong>Tip:</strong> Add new months by editing the <code>CHARTS</code> array below</div>
         <div id="updated">Last updated —</div>
       </div>
     </div>
@@ -76,7 +182,6 @@
 
   <script>
     // ====== Data: add or edit your months here ======
-    // url is relative to repo root (e.g., charts/aug-sep-2025.html)
     const CHARTS = [
       {
         title: "August → September 2025",
@@ -85,68 +190,158 @@
         income: 8200000,
         overspend: 2742421,
         foodPct: 53.3,
-        savingsPct: 0
+        savingsPct: 0,
+        status: "danger"
       },
-      // Optional alternate view
       {
-        title: "Aug → Sept 2025 (Alt)",
-        period: "Same period — alternate chart",
+        title: "Aug → Sept 2025 (Interactive)",
+        period: "Same period — ECharts interactive version",
         url: "charts/cgpt-aug-sep-2025.html",
-        status: "ok" // ok | soon | danger
+        income: 8200000,
+        overspend: 2742421,
+        foodPct: 53.3,
+        savingsPct: 0,
+        status: "ok"
       },
-      // Future placeholders you can quickly rename
-      { title: "September → October 2025", period: "Sep 24 → Oct 24, 2025", url: "#", status: "soon" },
-      { title: "October → November 2025", period: "Oct 24 → Nov 24, 2025", url: "#", status: "soon" }
+      {
+        title: "September → October 2025", 
+        period: "Sep 24 → Oct 24, 2025", 
+        url: "#", 
+        status: "soon",
+        targetSavings: 15,
+        targetFood: 25
+      },
+      {
+        title: "October → November 2025", 
+        period: "Oct 24 → Nov 24, 2025", 
+        url: "#", 
+        status: "soon",
+        targetSavings: 18,
+        targetFood: 22
+      },
+      {
+        title: "November → December 2025", 
+        period: "Nov 24 → Dec 24, 2025", 
+        url: "#", 
+        status: "soon",
+        targetSavings: 20,
+        targetFood: 20
+      }
     ];
 
-    function fmtRp(n){ return "Rp " + Math.round(n).toLocaleString("id-ID"); }
+    function fmtRp(n){ 
+      if(n >= 1000000) return "Rp " + (n/1000000).toFixed(1) + "M";
+      if(n >= 1000) return "Rp " + (n/1000).toFixed(0) + "K";
+      return "Rp " + Math.round(n).toLocaleString("id-ID"); 
+    }
+    
     function pct(n,d=1){ return (Math.round(n * (10**d)) / (10**d)).toFixed(d) + "%"; }
 
     function makeCard(item){
       const overs = typeof item.overspend === "number" ? item.overspend : 0;
       const status = item.status || (overs > 0 ? "danger" : "ok");
+      
       const card = document.createElement("div");
-      card.className = "card";
+      card.className = `card ${status}`;
+      
+      // Progress ring for critical cards
+      if(status === "danger"){
+        const ring = document.createElement("div");
+        ring.className = "progress-ring";
+        card.appendChild(ring);
+      }
 
       const badge = document.createElement("div");
       badge.className = "badge " + (status === "danger" ? "b-danger" : status === "soon" ? "b-soon" : "b-ok");
-      badge.textContent = status === "danger" ? "CRITICAL" : status === "soon" ? "UPCOMING" : "READY";
+      badge.textContent = status === "danger" ? "Critical" : status === "soon" ? "Upcoming" : "Ready";
       card.appendChild(badge);
 
-      const t = document.createElement("div");
-      t.className = "title";
-      t.textContent = item.title;
-      card.appendChild(t);
+      const title = document.createElement("div");
+      title.className = "title";
+      title.textContent = item.title;
+      card.appendChild(title);
 
-      const p = document.createElement("div");
-      p.className = "period";
-      p.textContent = item.period || "";
-      card.appendChild(p);
+      const period = document.createElement("div");
+      period.className = "period";
+      period.textContent = item.period || "";
+      card.appendChild(period);
 
+      // Stats section
+      const stats = document.createElement("div"); 
+      stats.className = "stats";
+      
       if (typeof item.income === "number"){
-        const stats = document.createElement("div"); stats.className = "stats";
+        const deficit = overs / item.income * 100;
+        const balanceClass = overs > 0 ? "stat-balance" : "stat-balance positive";
+        const foodClass = item.foodPct > 30 ? "stat-food danger" : "stat-food";
+        const savingsClass = item.savingsPct === 0 ? "stat-savings zero" : "stat-savings";
+        
         stats.innerHTML = `
-          <div class="stat"><div class="sv">${fmtRp(item.income)}</div><div class="sl">Income</div></div>
-          <div class="stat"><div class="sv">${overs>0?("-" + pct((overs/item.income)*100)):"0%"}</div><div class="sl">Balance</div></div>
-          <div class="stat"><div class="sv">${typeof item.foodPct==="number"?pct(item.foodPct):"—"}</div><div class="sl">Food</div></div>
-          <div class="stat"><div class="sv">${typeof item.savingsPct==="number"?pct(item.savingsPct):"—"}</div><div class="sl">Savings</div></div>
+          <div class="stat stat-income">
+            <div class="sv">${fmtRp(item.income)}</div>
+            <div class="sl">Income</div>
+          </div>
+          <div class="stat ${balanceClass}">
+            <div class="sv">${overs > 0 ? "-" + pct(deficit) : "Surplus"}</div>
+            <div class="sl">Balance</div>
+          </div>
+          <div class="stat ${foodClass}">
+            <div class="sv">${typeof item.foodPct==="number" ? pct(item.foodPct) : "—"}</div>
+            <div class="sl">Food Spending</div>
+          </div>
+          <div class="stat ${savingsClass}">
+            <div class="sv">${typeof item.savingsPct==="number" ? pct(item.savingsPct) : "—"}</div>
+            <div class="sl">Savings Rate</div>
+          </div>
         `;
-        card.appendChild(stats);
+      } else {
+        // Future months with targets
+        stats.innerHTML = `
+          <div class="stat stat-income">
+            <div class="sv">~Rp 8.2M</div>
+            <div class="sl">Est. Income</div>
+          </div>
+          <div class="stat stat-balance positive">
+            <div class="sv">Goal: +5%</div>
+            <div class="sl">Target Balance</div>
+          </div>
+          <div class="stat stat-food">
+            <div class="sv">Target: <${item.targetFood || 25}%</div>
+            <div class="sl">Food Spending</div>
+          </div>
+          <div class="stat stat-savings">
+            <div class="sv">Target: ${item.targetSavings || 15}%+</div>
+            <div class="sl">Savings Rate</div>
+          </div>
+        `;
       }
+      
+      card.appendChild(stats);
 
-      const a = document.createElement("a");
-      a.href = item.url || "#"; a.target = "_self"; a.rel = "noopener";
-      a.className = "btn"; a.textContent = item.url && item.url !== "#" ? "Open Chart" : "Coming Soon";
-      if (!item.url || item.url === "#"){ a.style.opacity = .6; a.style.pointerEvents = "none"; }
-      card.appendChild(a);
-
+      const btn = document.createElement("a");
+      btn.href = item.url || "#"; 
+      btn.target = "_self"; 
+      btn.className = "btn";
+      btn.textContent = item.url && item.url !== "#" ? "📊 View Detailed Analysis" : "⏳ Coming Soon";
+      
+      if (!item.url || item.url === "#"){ 
+        btn.classList.add("disabled");
+      }
+      
+      card.appendChild(btn);
       return card;
     }
 
+    // Render cards
     const mount = document.getElementById("cards");
     CHARTS.forEach(c => mount.appendChild(makeCard(c)));
 
-    document.getElementById("updated").textContent = "Last updated — " + new Date().toLocaleDateString("en-GB", { day:"2-digit", month:"short", year:"numeric" });
+    // Update timestamp
+    document.getElementById("updated").textContent = "Last updated — " + 
+      new Date().toLocaleDateString("en-GB", { 
+        day:"2-digit", month:"short", year:"numeric", 
+        hour:"2-digit", minute:"2-digit"
+      });
   </script>
 </body>
 </html>
