@@ -1,0 +1,194 @@
+import React, { useMemo, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
+import { motion } from "framer-motion";
+import {
+  BarChart,
+  Bar,
+  Cell,
+  Tooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
+import { ArrowUpDown, Percent, CircleDollarSign } from "lucide-react";
+
+// --- Data (Aug 24 → Sept 24, 2025) ---
+const INCOME = 8_200_000;
+
+const RAW = [
+  { category: "Food", amount: 4_370_800, type: "Essential" },
+  { category: "Laundry", amount: 250_000, type: "Essential" },
+  { category: "Fuel", amount: 150_000, type: "Essential" },
+  { category: "Toiletries", amount: 200_000, type: "Essential" },
+  { category: "Subscriptions", amount: 879_910, type: "Essential" },
+  { category: "KOS (rent)", amount: 1_200_000, type: "Essential" },
+  { category: "PLN Token", amount: 103_000, type: "Essential" },
+  { category: "Telkomsel", amount: 151_000, type: "Essential" },
+  { category: "Haircut", amount: 60_000, type: "Essential" },
+  { category: "Telkomsel mamam", amount: 102_000, type: "Essential" },
+  { category: "First Media", amount: 361_860, type: "Essential" },
+  { category: "Gas PGN", amount: 153_000, type: "Essential" },
+  { category: "Strategic (GoPay Later payoff)", amount: 1_763_222, type: "Strategic" },
+  { category: "Lifestyle (BiliBili + Vape)", amount: 398_090, type: "Lifestyle" },
+  { category: "Buffer", amount: 799_539, type: "Buffer" },
+  // Overspend is an INDICATOR, not an expense. We keep it as a row for visualization only.
+  { category: "Overspend", amount: 2_742_421, type: "Overspend" },
+];
+
+// Helpers
+const fmtRp = (n: number) => new Intl.NumberFormat("id-ID").format(Math.round(n));
+const pct = (n: number) => (n / INCOME) * 100;
+
+const COLOR_BY_TYPE: Record<string, string> = {
+  Essential: "#0ea5e9", // sky-500
+  Strategic: "#f59e0b", // amber-500
+  Lifestyle: "#8b5cf6", // violet-500
+  Buffer: "#64748b", // slate-500
+  Overspend: "#ef4444", // red-500
+};
+
+const typeOrder: Record<string, number> = { Essential: 0, Strategic: 1, Lifestyle: 2, Buffer: 3, Overspend: 4 };
+
+export default function InteractiveSpendingBarAugSept2025() {
+  const [usePercent, setUsePercent] = useState(false);
+  const [desc, setDesc] = useState(true);
+  const [labelToggle, setLabelToggle] = useState(true);
+
+  // ✅ Compute totals correctly: expenses EXCLUDE overspend; overspend is derived
+  const totals = useMemo(() => {
+    const totalExpenses = RAW.filter((r) => r.type !== "Overspend").reduce((s, r) => s + r.amount, 0);
+    const overspend = Math.max(totalExpenses - INCOME, 0);
+    return { totalExpenses, overspend };
+  }, []);
+
+  // "Tests" (light sanity checks) — run in dev only
+  if (typeof window !== "undefined") {
+    console.assert(
+      totals.totalExpenses === RAW.filter((r) => r.type !== "Overspend").reduce((s, r) => s + r.amount, 0),
+      "[Test] Total expenses calc mismatch"
+    );
+    console.assert(
+      totals.overspend === Math.max(totals.totalExpenses - INCOME, 0),
+      "[Test] Overspend calc mismatch"
+    );
+  }
+
+  // Build chart rows; inject computed overspend amount and per-row styling/labels
+  const data = useMemo(() => {
+    const rows = RAW.map((d) => {
+      const amount = d.type === "Overspend" ? totals.overspend : d.amount;
+      const value = usePercent ? pct(amount) : amount;
+      const label = usePercent ? `${pct(amount).toFixed(1)}%` : `Rp${fmtRp(amount)}`;
+      return { ...d, amount, value, label, fill: COLOR_BY_TYPE[d.type] || "#94a3b8" };
+    });
+    // sort by value (desc/asc), with deterministic tie-breakers: type then name
+    return rows.sort((a, b) => {
+      const dir = desc ? -1 : 1;
+      if (a.value === b.value) {
+        if (typeOrder[a.type] === typeOrder[b.type]) return a.category.localeCompare(b.category);
+        return (typeOrder[a.type] - typeOrder[b.type]) * dir;
+      }
+      return a.value > b.value ? -1 * dir : 1 * dir;
+    });
+  }, [usePercent, desc, totals]);
+
+  return (
+    <div className="w-full p-4 md:p-6">
+      <div className="mx-auto max-w-6xl grid grid-cols-1 gap-4">
+        <motion.h1
+          initial={{ opacity: 0, y: -6 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="text-2xl md:text-3xl font-semibold"
+        >
+          Spending by Category — <span className="text-sky-600">Aug 24 → Sept 24, 2025</span>
+        </motion.h1>
+
+        <Card className="shadow-sm">
+          <CardContent className="p-4 md:p-6">
+            <div className="flex flex-wrap items-center gap-3 mb-4">
+              <Button variant="secondary" size="sm" onClick={() => setUsePercent(false)} className={!usePercent ? "ring-2 ring-sky-500" : ""}>
+                <CircleDollarSign className="w-4 h-4 mr-2" /> Rupiah
+              </Button>
+              <Button variant="secondary" size="sm" onClick={() => setUsePercent(true)} className={usePercent ? "ring-2 ring-sky-500" : ""}>
+                <Percent className="w-4 h-4 mr-2" /> % of Income
+              </Button>
+              <Button variant="outline" size="sm" onClick={() => setDesc((d) => !d)}>
+                <ArrowUpDown className="w-4 h-4 mr-2" /> {desc ? "Sort: High → Low" : "Sort: Low → High"}
+              </Button>
+              <div className="flex items-center gap-2 ml-auto">
+                <Switch id="labels" checked={labelToggle} onCheckedChange={setLabelToggle} />
+                <Label htmlFor="labels">Show labels</Label>
+              </div>
+            </div>
+
+            <div className="h-[420px]">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={data} margin={{ top: 10, right: 16, left: 0, bottom: 60 }}>
+                  <CartesianGrid strokeDasharray="3 3" opacity={0.3} />
+                  <XAxis dataKey="category" angle={-35} textAnchor="end" interval={0} height={80} tick={{ fontSize: 12 }} />
+                  <YAxis tickFormatter={(v) => (usePercent ? `${(v as number).toFixed(0)}%` : `Rp${fmtRp(v as number)}`)} tick={{ fontSize: 12 }} />
+                  <Tooltip
+                    formatter={(value: number, _name: string, props: any) => {
+                      const row = props?.payload;
+                      const rp = `Rp${fmtRp(row.amount)}`;
+                      const pc = `${pct(row.amount).toFixed(2)}%`;
+                      return [usePercent ? pc : rp, row.category];
+                    }}
+                  />
+                  <Bar dataKey="value" radius={[8, 8, 0, 0]} animationBegin={200} animationDuration={800} animationEasing="ease-out" isAnimationActive>
+                    {data.map((entry) => (
+                      <Cell key={entry.category} fill={entry.fill} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {labelToggle && (
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-4">
+                {data.map((d) => (
+                  <div key={d.category} className="flex items-center justify-between rounded-xl border p-2">
+                    <span className="text-sm mr-2 truncate" title={`${d.category} — ${d.type}`}>{d.category}</span>
+                    <span className="text-sm font-medium" style={{ color: d.fill }}>
+                      {d.label}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+          <Card className="bg-sky-50">
+            <CardContent className="p-4">
+              <div className="text-sm text-sky-700">Income</div>
+              <div className="text-2xl font-semibold">Rp{fmtRp(INCOME)}</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-amber-50">
+            <CardContent className="p-4">
+              <div className="text-sm text-amber-700">Total Expenses</div>
+              <div className="text-2xl font-semibold">Rp{fmtRp(totals.totalExpenses)}</div>
+            </CardContent>
+          </Card>
+          <Card className="bg-rose-50">
+            <CardContent className="p-4">
+              <div className="text-sm text-rose-700">Overspend</div>
+              <div className="text-2xl font-semibold">Rp{fmtRp(totals.overspend)} <span className="text-base font-normal">({pct(totals.overspend).toFixed(1)}%)</span></div>
+            </CardContent>
+          </Card>
+        </div>
+
+        <p className="text-xs text-muted-foreground mt-2">
+          Note: "Total Expenses" excludes Overspend; Overspend = max(Total Expenses − Income, 0) and is shown as an indicator only. Toggle % view to see which categories are eating the largest bite of income.
+        </p>
+      </div>
+    </div>
+  );
+}
